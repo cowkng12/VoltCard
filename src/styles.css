@@ -151,6 +151,7 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 .hero-card p { margin: 0; }
 .hero-row { display: flex; justify-content: space-between; margin-top: 24px; color: rgba(255,255,255,0.76); }
 .hero-row b, .positive { color: #72f0bd; }
+.negative { color: #ff8f9c !important; }
 
 .quick-actions, .card-actions-grid {
   display: grid;
@@ -343,6 +344,7 @@ input:focus { border-color: rgba(59,130,246,.9); box-shadow: 0 0 0 4px rgba(59,1
 .investment-hero { padding: 22px; border-radius: 28px; margin: 16px 0 22px; }
 .investment-hero h1 { margin: 8px 0; font-size: 42px; letter-spacing: -0.07em; }
 .investment-hero p { margin: 0; color: rgba(232,240,255,.62); }
+.market-source { margin: -6px 0 12px; color: rgba(232,240,255,.48); font-size: 12px; font-weight: 700; }
 .coin-list { display: grid; gap: 11px; margin-bottom: 18px; }
 .coin-card {
   display: grid;
@@ -364,6 +366,10 @@ input:focus { border-color: rgba(59,130,246,.9); box-shadow: 0 0 0 4px rgba(59,1
 .coin-price span { color: #72f0bd; font-weight: 800; }
 .invest-panel { display: grid; gap: 14px; padding: 16px; border-radius: 26px; margin-bottom: 22px; }
 .invest-panel h3 { margin: 5px 0 0; letter-spacing: -.03em; }
+.research-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.research-grid div { display: grid; gap: 5px; padding: 12px; border-radius: 16px; background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.07); }
+.research-grid span { color: rgba(232,240,255,.55); font-size: 12px; font-weight: 700; }
+.research-grid strong { color: #fff; font-size: 14px; }
 .holding-card { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 12px; padding: 13px; border-radius: 22px; }
 .holding-card b { color: #fff; }
 .bottom-nav {

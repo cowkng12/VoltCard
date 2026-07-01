@@ -42,6 +42,8 @@ type Coin = {
   name: string;
   price: number;
   change: number;
+  marketCap: number;
+  volume: number;
   color: string;
   points: string;
 };
@@ -69,12 +71,21 @@ const products: CardProduct[] = [
 ];
 
 const coins: Coin[] = [
-  { symbol: 'USDT', name: 'Tether USD', price: 1, change: 0.01, color: '#72f0bd', points: '0,42 26,38 52,40 78,35 104,37 130,33 156,34 182,31' },
-  { symbol: 'TON', name: 'Toncoin', price: 7.24, change: 4.82, color: '#3b82f6', points: '0,50 26,46 52,43 78,34 104,37 130,26 156,22 182,16' },
-  { symbol: 'BTC', name: 'Bitcoin', price: 64280, change: 2.34, color: '#f7b955', points: '0,48 26,40 52,44 78,36 104,31 130,34 156,24 182,20' },
-  { symbol: 'ETH', name: 'Ethereum', price: 3510, change: 1.76, color: '#9fb7ff', points: '0,46 26,42 52,39 78,41 104,30 130,32 156,27 182,23' },
-  { symbol: 'SOL', name: 'Solana', price: 148.8, change: 5.15, color: '#c084fc', points: '0,52 26,49 52,45 78,39 104,35 130,30 156,21 182,18' }
+  { symbol: 'USDT', name: 'Tether USD', price: 1, change: 0.01, marketCap: 112000000000, volume: 42000000000, color: '#72f0bd', points: '0,42 26,38 52,40 78,35 104,37 130,33 156,34 182,31' },
+  { symbol: 'TON', name: 'Toncoin', price: 7.24, change: 4.82, marketCap: 18000000000, volume: 610000000, color: '#3b82f6', points: '0,50 26,46 52,43 78,34 104,37 130,26 156,22 182,16' },
+  { symbol: 'BTC', name: 'Bitcoin', price: 64280, change: 2.34, marketCap: 1260000000000, volume: 31000000000, color: '#f7b955', points: '0,48 26,40 52,44 78,36 104,31 130,34 156,24 182,20' },
+  { symbol: 'ETH', name: 'Ethereum', price: 3510, change: 1.76, marketCap: 421000000000, volume: 15000000000, color: '#9fb7ff', points: '0,46 26,42 52,39 78,41 104,30 130,32 156,27 182,23' },
+  { symbol: 'SOL', name: 'Solana', price: 148.8, change: 5.15, marketCap: 69000000000, volume: 2800000000, color: '#c084fc', points: '0,52 26,49 52,45 78,39 104,35 130,30 156,21 182,18' }
 ];
+
+function formatMoney(value: number, compact = false) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: value >= 100 ? 0 : 2,
+    notation: compact ? 'compact' : 'standard'
+  }).format(value);
+}
 
 const page = {
   initial: { opacity: 0, y: 18, filter: 'blur(8px)' },
@@ -107,6 +118,8 @@ function App() {
   const [issuedCards, setIssuedCards] = useState<IssuedCard[]>([]);
   const [showCvv, setShowCvv] = useState(false);
   const [isFrozen, setIsFrozen] = useState(false);
+  const [marketCoins, setMarketCoins] = useState<Coin[]>(coins);
+  const [marketSource, setMarketSource] = useState('loading');
   const [selectedCoin, setSelectedCoin] = useState<Coin>(coins[1]);
   const [investmentAmount, setInvestmentAmount] = useState('');
   const [investments, setInvestments] = useState<Investment[]>([]);
@@ -128,6 +141,39 @@ function App() {
   useEffect(() => {
     window.Telegram?.WebApp?.ready();
     window.Telegram?.WebApp?.expand();
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadMarket() {
+      try {
+        const response = await fetch('/api/market');
+        const data = (await response.json()) as {
+          source: string;
+          market: Array<Pick<Coin, 'symbol' | 'name' | 'price' | 'change' | 'marketCap' | 'volume'>>;
+        };
+
+        if (!isMounted) return;
+
+        const mergedCoins = coins.map((coin) => {
+          const liveCoin = data.market.find((item) => item.symbol === coin.symbol);
+          return liveCoin ? { ...coin, ...liveCoin } : coin;
+        });
+
+        setMarketCoins(mergedCoins);
+        setMarketSource(data.source);
+        setSelectedCoin((coin) => mergedCoins.find((item) => item.symbol === coin.symbol) ?? mergedCoins[1]);
+      } catch {
+        if (isMounted) setMarketSource('fallback');
+      }
+    }
+
+    loadMarket();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   function haptic() {
@@ -268,8 +314,9 @@ function App() {
               </div>
 
               <SectionTitle eyebrow="Market" title="Popular coins" />
+              <div className="market-source">Prices: {marketSource === 'coingecko' ? 'live via CoinGecko' : marketSource === 'loading' ? 'loading market data' : 'cached fallback'}</div>
               <div className="coin-list">
-                {coins.map((coin) => (
+                {marketCoins.map((coin) => (
                   <button className={coin.symbol === selectedCoin.symbol ? 'coin-card selected glass-panel' : 'coin-card glass-panel'} key={coin.symbol} onClick={() => setSelectedCoin(coin)}>
                     <div className="coin-icon" style={{ background: coin.color }}>{coin.symbol.slice(0, 1)}</div>
                     <div>
@@ -278,8 +325,8 @@ function App() {
                     </div>
                     <MiniChart coin={coin} />
                     <div className="coin-price">
-                      <strong>${coin.price.toLocaleString('en-US')}</strong>
-                      <span>+{coin.change}%</span>
+                      <strong>{formatMoney(coin.price)}</strong>
+                      <span className={coin.change >= 0 ? '' : 'negative'}>{coin.change >= 0 ? '+' : ''}{coin.change.toFixed(2)}%</span>
                     </div>
                   </button>
                 ))}
@@ -289,6 +336,12 @@ function App() {
                 <div>
                   <span className="tag">Selected asset</span>
                   <h3>{selectedCoin.name}</h3>
+                </div>
+                <div className="research-grid">
+                  <div><span>Price</span><strong>{formatMoney(selectedCoin.price)}</strong></div>
+                  <div><span>24h change</span><strong className={selectedCoin.change >= 0 ? 'positive' : 'negative'}>{selectedCoin.change >= 0 ? '+' : ''}{selectedCoin.change.toFixed(2)}%</strong></div>
+                  <div><span>Market cap</span><strong>{formatMoney(selectedCoin.marketCap, true)}</strong></div>
+                  <div><span>24h volume</span><strong>{formatMoney(selectedCoin.volume, true)}</strong></div>
                 </div>
                 <label>
                   Amount from card balance
