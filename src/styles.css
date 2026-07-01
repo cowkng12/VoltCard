@@ -75,7 +75,7 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   backdrop-filter: blur(14px);
 }
 
-.app-header span { font-weight: 750; letter-spacing: -0.02em; }
+.app-header > span { font-weight: 750; letter-spacing: -0.02em; }
 .brand-mark, .icon-button {
   display: grid;
   place-items: center;
@@ -88,6 +88,18 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 }
 .brand-mark { background: linear-gradient(135deg, #3b82f6, #8ec5ff); font-weight: 900; }
 .icon-button { padding: 0 12px; font-size: 13px; }
+.header-actions { display: flex; align-items: center; gap: 8px; }
+.notification-button { position: relative; }
+.notification-button i {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59,130,246,.16);
+}
 
 .glass-panel {
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -132,21 +144,54 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 .section-title span, .flow-intro span, .tag { color: #8bbcff; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
 .section-title h2 { margin: 3px 0 0; letter-spacing: -0.04em; }
 
-.product-list { display: grid; gap: 14px; }
-.product-card { display: grid; grid-template-columns: 92px 1fr; gap: 14px; padding: 14px; border-radius: 28px; }
-.mini-card-preview {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 150px;
-  padding: 14px;
-  border-radius: 22px;
-  background: linear-gradient(145deg, #3b82f6, #0d1b3a 65%, #05070d);
-  box-shadow: 0 16px 36px rgba(59,130,246,.22);
+.product-list { display: grid; gap: 18px; }
+.product-card { display: grid; gap: 16px; padding: 16px; border-radius: 32px; }
+.card-art {
+  position: relative;
+  min-height: 188px;
+  padding: 22px;
+  border-radius: 28px;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 12% 100%, rgba(59,130,246,.28), transparent 28%),
+    linear-gradient(135deg, #22252b, #090b10 48%, #020308);
+  border: 1px solid rgba(255,255,255,.16);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 24px 50px rgba(0,0,0,.38);
 }
-.mini-card-preview span { font-size: 11px; color: rgba(255,255,255,.72); }
+.wallet-art { min-height: 202px; }
+.compact-art { min-height: 110px; width: 150px; padding: 14px; border-radius: 20px; flex: 0 0 150px; }
+.art-brand { position: relative; z-index: 2; font-size: 29px; font-weight: 900; letter-spacing: -0.06em; text-shadow: 0 2px 8px rgba(0,0,0,.48); }
+.art-brand b { color: #2f7cff; }
+.pay-label { position: relative; z-index: 2; margin-top: 8px; color: rgba(255,255,255,.78); font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.art-chip { position: absolute; left: 24px; top: 84px; width: 48px; height: 38px; border-radius: 11px; background: linear-gradient(135deg, #f1f1f1, #9c9c9c); box-shadow: inset 0 0 0 1px rgba(0,0,0,.22); z-index: 2; }
+.wallet-art .art-chip { top: 96px; }
+.art-contactless { position: absolute; left: 88px; top: 95px; width: 24px; height: 34px; border-right: 4px solid rgba(255,255,255,.85); border-radius: 50%; z-index: 2; }
+.wallet-art .art-contactless { top: 107px; }
+.art-number { position: absolute; left: 24px; bottom: 44px; z-index: 2; color: rgba(255,255,255,.88); font-size: 17px; letter-spacing: .14em; text-shadow: 0 2px 8px #000; }
+.art-footer { position: absolute; left: 24px; right: 24px; bottom: 18px; z-index: 2; display: flex; align-items: end; justify-content: space-between; color: rgba(255,255,255,.72); font-size: 10px; font-weight: 800; letter-spacing: .09em; }
+.art-footer b { color: #fff; font-size: 26px; font-style: italic; letter-spacing: -.04em; }
+.art-bolt {
+  position: absolute;
+  z-index: 1;
+  right: -10px;
+  top: -18px;
+  width: 178px;
+  height: 230px;
+  background: linear-gradient(135deg, transparent 0 24%, rgba(59,130,246,.92) 25% 27%, rgba(5,12,28,.92) 28% 52%, transparent 53% 64%, rgba(59,130,246,.9) 65% 67%, rgba(4,8,18,.9) 68% 100%);
+  clip-path: polygon(52% 0, 100% 0, 68% 43%, 100% 43%, 29% 100%, 48% 55%, 14% 55%);
+  filter: drop-shadow(0 0 14px rgba(59,130,246,.7));
+  opacity: .92;
+}
+.compact-art .art-brand { font-size: 18px; }
+.compact-art .pay-label, .compact-art .art-number, .compact-art .art-footer span { display: none; }
+.compact-art .art-chip { left: 14px; top: 48px; width: 34px; height: 26px; border-radius: 8px; }
+.compact-art .art-contactless { left: 58px; top: 53px; width: 18px; height: 25px; border-right-width: 3px; }
+.compact-art .art-footer { bottom: 12px; right: 14px; }
+.compact-art .art-footer b { font-size: 18px; }
+.compact-art .art-bolt { width: 105px; height: 142px; }
 .product-content h3 { margin: 8px 0; letter-spacing: -0.035em; }
-.product-content p { margin: 0 0 14px; font-size: 13px; line-height: 1.5; }
+.product-content p { margin: 0 0 16px; font-size: 14px; line-height: 1.55; }
 .product-content button {
   display: inline-flex;
   align-items: center;
@@ -196,16 +241,20 @@ input:focus { border-color: rgba(59,130,246,.9); box-shadow: 0 0 0 4px rgba(59,1
   border-radius: 30px;
   overflow: hidden;
   background:
-    radial-gradient(circle at 20% 15%, rgba(255,255,255,.24), transparent 12rem),
-    linear-gradient(135deg, #101827, #07111f 48%, #3b82f6);
+    radial-gradient(circle at 14% 100%, rgba(59,130,246,.22), transparent 12rem),
+    linear-gradient(135deg, #202226, #0a0c12 48%, #020308);
   border: 1px solid rgba(255,255,255,.14);
   box-shadow: 0 25px 60px rgba(0,0,0,.45), 0 18px 44px rgba(59,130,246,.18);
   transform-style: preserve-3d;
 }
+.wallet-bank-card { min-height: 252px; }
 .frozen-card { filter: grayscale(.8); opacity: .72; }
-.card-glow { position: absolute; inset: -40% -20% auto auto; width: 220px; height: 220px; border-radius: 999px; background: rgba(255,255,255,.18); filter: blur(34px); }
+.card-glow { position: absolute; inset: -40% -20% auto auto; width: 220px; height: 220px; border-radius: 999px; background: rgba(59,130,246,.16); filter: blur(34px); }
+.card-lightning { position: absolute; right: -28px; top: -24px; width: 220px; height: 288px; background: linear-gradient(135deg, transparent 0 24%, #3b82f6 25% 27%, rgba(4,8,18,.88) 28% 52%, transparent 53% 64%, #3b82f6 65% 67%, rgba(4,8,18,.88) 68% 100%); clip-path: polygon(52% 0, 100% 0, 68% 43%, 100% 43%, 29% 100%, 48% 55%, 14% 55%); filter: drop-shadow(0 0 15px rgba(59,130,246,.72)); opacity: .78; }
 .card-top, .card-bottom { position: relative; display: flex; justify-content: space-between; align-items: flex-start; }
 .card-top span { font-size: 20px; font-weight: 900; }
+.card-top b { color: #2f7cff; }
+.wallet-pay-copy { position: relative; margin-top: 10px; color: rgba(255,255,255,.72); font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .chip { position: relative; width: 48px; height: 36px; margin: 34px 0 24px; border-radius: 10px; background: linear-gradient(135deg, #efe4b6, #8f7537); }
 .card-number { position: relative; display: block; font-size: 21px; letter-spacing: .08em; }
 .card-bottom { margin-top: 25px; gap: 10px; }
@@ -224,6 +273,19 @@ input:focus { border-color: rgba(59,130,246,.9); box-shadow: 0 0 0 4px rgba(59,1
 .transaction-icon { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 16px; background: rgba(59,130,246,.16); color: #9cc5ff; font-size: 12px; font-weight: 900; }
 .transaction div:nth-child(2) { display: grid; gap: 3px; }
 .transaction b { color: #fff; }
+.profile-summary { display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 24px; margin: 18px 0 22px; }
+.profile-avatar { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 20px; background: linear-gradient(135deg, #3b82f6, #8ec5ff); font-size: 24px; font-weight: 900; }
+.profile-summary div:last-child { display: grid; gap: 4px; }
+.profile-summary span, .owned-card span, .empty-state span, .notification-item span { color: rgba(232,240,255,.62); }
+.owned-cards, .notifications-list { display: grid; gap: 12px; }
+.owned-card { display: flex; align-items: center; gap: 14px; width: 100%; padding: 12px; border-radius: 26px; color: #fff; text-align: left; }
+.owned-card > div:nth-child(2) { display: grid; gap: 6px; min-width: 0; flex: 1; }
+.owned-card strong { line-height: 1.2; }
+.empty-state { display: grid; place-items: center; gap: 10px; padding: 28px 18px; border-radius: 26px; text-align: center; }
+.notification-item { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 12px; padding: 14px; border-radius: 22px; }
+.notification-dot { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 16px; background: rgba(59,130,246,.14); color: #9cc5ff; }
+.notification-item div:nth-child(2) { display: grid; gap: 4px; }
+.notification-item b { color: #fff; }
 
 @media (max-width: 520px) {
   .app-shell { padding: 0; }

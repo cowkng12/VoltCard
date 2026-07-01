@@ -5,14 +5,14 @@ import {
   Bell,
   ChevronRight,
   Copy,
+  CreditCard,
   Eye,
   EyeOff,
   Lock,
   Plus,
   Settings,
   Shield,
-  Snowflake,
-  Wallet
+  Snowflake
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -32,7 +32,7 @@ type IssuedCard = {
   cvv: string;
 };
 
-type Step = 'home' | 'holder' | 'deposit' | 'issued' | 'manage';
+type Step = 'home' | 'holder' | 'deposit' | 'issued' | 'manage' | 'profile' | 'notifications';
 
 const products: CardProduct[] = [
   {
@@ -84,6 +84,7 @@ function App() {
   const [lastName, setLastName] = useState('');
   const [deposit, setDeposit] = useState('');
   const [issuedCard, setIssuedCard] = useState<IssuedCard | null>(null);
+  const [issuedCards, setIssuedCards] = useState<IssuedCard[]>([]);
   const [showCvv, setShowCvv] = useState(false);
   const [isFrozen, setIsFrozen] = useState(false);
 
@@ -115,8 +116,16 @@ function App() {
   function issueCard() {
     const card = generateCard(selectedProduct, holderName, depositValue);
     setIssuedCard(card);
+    setIssuedCards((cards) => [card, ...cards]);
     haptic();
     setStep('issued');
+  }
+
+  function goBack() {
+    if (step === 'holder') setStep('home');
+    else if (step === 'deposit') setStep('holder');
+    else if (step === 'profile' || step === 'notifications') setStep('home');
+    else setStep('manage');
   }
 
   async function copyCardNumber() {
@@ -131,7 +140,13 @@ function App() {
       <div className="ambient ambient-two" />
 
       <section className="phone-frame">
-        <AppHeader step={step} onBack={() => setStep(step === 'holder' ? 'home' : step === 'deposit' ? 'holder' : 'manage')} />
+        <AppHeader
+          step={step}
+          hasUnread={issuedCards.length > 0}
+          onBack={goBack}
+          onProfile={() => setStep('profile')}
+          onNotifications={() => setStep('notifications')}
+        />
 
         <AnimatePresence mode="wait">
           {step === 'home' && (
@@ -148,6 +163,51 @@ function App() {
                 {products.map((product) => (
                   <ProductCard key={product.id} product={product} onSelect={() => selectProduct(product)} />
                 ))}
+              </div>
+            </motion.div>
+          )}
+
+          {step === 'profile' && (
+            <motion.div key="profile" {...page} className="screen">
+              <FlowIntro step="Profile" title="Your cards" text="Manage purchased VoltCard products and jump back into card controls." />
+              <div className="profile-summary glass-panel">
+                <div className="profile-avatar">V</div>
+                <div>
+                  <strong>{telegramName}</strong>
+                  <span>{issuedCards.length} active card{issuedCards.length === 1 ? '' : 's'}</span>
+                </div>
+              </div>
+
+              <SectionTitle eyebrow="Purchased" title="Cards" />
+              <div className="owned-cards">
+                {issuedCards.length === 0 && <EmptyState title="No cards yet" text="Issued virtual cards will appear here after purchase." />}
+                {issuedCards.map((card) => (
+                  <button className="owned-card glass-panel" key={`${card.product.id}-${card.number}`} onClick={() => { setIssuedCard(card); setStep('manage'); }}>
+                    <CardArtwork product={card.product} compact />
+                    <div>
+                      <strong>{card.product.name}</strong>
+                      <span>{card.number.slice(-4).padStart(card.number.length, '*')}</span>
+                    </div>
+                    <ChevronRight size={18} />
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {step === 'notifications' && (
+            <motion.div key="notifications" {...page} className="screen">
+              <FlowIntro step="Messages" title="Activity" text="Card updates and purchase notifications will appear here." />
+              <div className="notifications-list">
+                {issuedCards.length === 0 && <EmptyState title="No messages" text="After you issue a card and make purchases, VoltCard will show messages here." />}
+                {issuedCards.length > 0 && (
+                  <>
+                    <NotificationItem title="Card issued" text={`${issuedCards[0].product.name} is active and ready for online payments.`} amount={`$${issuedCards[0].deposit.toFixed(2)}`} />
+                    {transactions.filter((item) => item.amount < 0).map((item) => (
+                      <NotificationItem key={item.name} title={`${item.name} purchase`} text={`Paid with ${issuedCards[0].product.name}`} amount={`-$${Math.abs(item.amount).toFixed(2)}`} />
+                    ))}
+                  </>
+                )}
               </div>
             </motion.div>
           )}
@@ -253,12 +313,27 @@ function App() {
   );
 }
 
-function AppHeader({ step, onBack }: { step: Step; onBack: () => void }) {
+function AppHeader({
+  step,
+  hasUnread,
+  onBack,
+  onProfile,
+  onNotifications
+}: {
+  step: Step;
+  hasUnread: boolean;
+  onBack: () => void;
+  onProfile: () => void;
+  onNotifications: () => void;
+}) {
   return (
     <header className="app-header">
-      {step === 'home' ? <div className="brand-mark">V</div> : <button className="icon-button" onClick={onBack}>Back</button>}
+      {step === 'home' ? <button className="icon-button notification-button" onClick={onNotifications}><Bell size={17} />{hasUnread && <i />}</button> : <button className="icon-button" onClick={onBack}>Back</button>}
       <span>VoltCard</span>
-      <button className="icon-button"><Bell size={17} /></button>
+      <div className="header-actions">
+        {step !== 'home' && <button className="icon-button notification-button" onClick={onNotifications}><Bell size={17} />{hasUnread && <i />}</button>}
+        <button className="brand-mark" onClick={onProfile}>V</button>
+      </div>
     </header>
   );
 }
@@ -280,7 +355,7 @@ function Hero({ name }: { name: string }) {
 function ProductCard({ product, onSelect }: { product: CardProduct; onSelect: () => void }) {
   return (
     <article className="product-card glass-panel">
-      <div className="mini-card-preview"><Wallet size={22} /><span>{product.tag}</span></div>
+      <CardArtwork product={product} />
       <div className="product-content">
         <span className="tag">{product.tag}</span>
         <h3>{product.name}</h3>
@@ -291,11 +366,30 @@ function ProductCard({ product, onSelect }: { product: CardProduct; onSelect: ()
   );
 }
 
+function CardArtwork({ product, compact = false }: { product: CardProduct; compact?: boolean }) {
+  return (
+    <div className={`card-art ${product.id === 'wallet-pay' ? 'wallet-art' : 'subscription-art'} ${compact ? 'compact-art' : ''}`}>
+      <div className="art-brand"><span>Volt</span><b>Card</b></div>
+      {product.id === 'wallet-pay' && <div className="pay-label">Apple Pay / Google Pay</div>}
+      <div className="art-chip" />
+      <div className="art-contactless" />
+      <div className="art-number">4578 1234 5678 9012</div>
+      <div className="art-footer">
+        <span>{product.id === 'subscriptions' ? 'SUBSCRIPTIONS' : 'WALLET PAY'}</span>
+        <b>VISA</b>
+      </div>
+      <div className="art-bolt" />
+    </div>
+  );
+}
+
 function BankCard({ card, showCvv, frozen = false }: { card: IssuedCard; showCvv: boolean; frozen?: boolean }) {
   return (
-    <motion.div className={frozen ? 'bank-card frozen-card' : 'bank-card'} initial={{ rotateX: 22, scale: 0.94 }} animate={{ rotateX: 0, scale: 1 }} transition={{ duration: 0.55, ease: 'easeOut' }}>
+    <motion.div className={`${frozen ? 'bank-card frozen-card' : 'bank-card'} ${card.product.id === 'wallet-pay' ? 'wallet-bank-card' : ''}`} initial={{ rotateX: 22, scale: 0.94 }} animate={{ rotateX: 0, scale: 1 }} transition={{ duration: 0.55, ease: 'easeOut' }}>
       <div className="card-glow" />
-      <div className="card-top"><span>VoltCard</span><Lock size={18} /></div>
+      <div className="card-lightning" />
+      <div className="card-top"><span>Volt<b>Card</b></span><Lock size={18} /></div>
+      {card.product.id === 'wallet-pay' && <div className="wallet-pay-copy">Apple Pay / Google Pay</div>}
       <div className="chip" />
       <strong className="card-number">{card.number}</strong>
       <div className="card-bottom">
@@ -304,6 +398,20 @@ function BankCard({ card, showCvv, frozen = false }: { card: IssuedCard; showCvv
         <div><span>CVV</span><b>{showCvv ? card.cvv : '***'}</b></div>
       </div>
     </motion.div>
+  );
+}
+
+function EmptyState({ title, text }: { title: string; text: string }) {
+  return <div className="empty-state glass-panel"><CreditCard size={24} /><strong>{title}</strong><span>{text}</span></div>;
+}
+
+function NotificationItem({ title, text, amount }: { title: string; text: string; amount: string }) {
+  return (
+    <div className="notification-item glass-panel">
+      <div className="notification-dot"><Bell size={16} /></div>
+      <div><strong>{title}</strong><span>{text}</span></div>
+      <b>{amount}</b>
+    </div>
   );
 }
 
