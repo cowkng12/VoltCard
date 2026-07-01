@@ -51,12 +51,6 @@ const products: CardProduct[] = [
   }
 ];
 
-const transactions = [
-  { name: 'OpenAI ChatGPT', type: 'Subscription', amount: -20, icon: 'AI' },
-  { name: 'Top up', type: 'Balance deposit', amount: 250, icon: '+' },
-  { name: 'Spotify', type: 'Music', amount: -10.99, icon: 'SP' }
-];
-
 const page = {
   initial: { opacity: 0, y: 18, filter: 'blur(8px)' },
   animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
@@ -201,12 +195,7 @@ function App() {
               <div className="notifications-list">
                 {issuedCards.length === 0 && <EmptyState title="No messages" text="After you issue a card and make purchases, VoltCard will show messages here." />}
                 {issuedCards.length > 0 && (
-                  <>
-                    <NotificationItem title="Card issued" text={`${issuedCards[0].product.name} is active and ready for online payments.`} amount={`$${issuedCards[0].deposit.toFixed(2)}`} />
-                    {transactions.filter((item) => item.amount < 0).map((item) => (
-                      <NotificationItem key={item.name} title={`${item.name} purchase`} text={`Paid with ${issuedCards[0].product.name}`} amount={`-$${Math.abs(item.amount).toFixed(2)}`} />
-                    ))}
-                  </>
+                  <NotificationItem title="Card issued" text={`${issuedCards[0].product.name} is active and ready for online payments.`} amount={`$${issuedCards[0].deposit.toFixed(2)}`} />
                 )}
               </div>
             </motion.div>
@@ -294,16 +283,7 @@ function App() {
 
               <SectionTitle eyebrow="Recent" title="Operations" />
               <div className="transactions">
-                {transactions.map((item) => (
-                  <div className="transaction" key={item.name}>
-                    <div className="transaction-icon">{item.icon}</div>
-                    <div>
-                      <strong>{item.name}</strong>
-                      <span>{item.type}</span>
-                    </div>
-                    <b className={item.amount > 0 ? 'positive' : ''}>{item.amount > 0 ? '+' : '-'}${Math.abs(item.amount).toFixed(2)}</b>
-                  </div>
-                ))}
+                <EmptyState title="No operations yet" text="Real purchases, top ups and withdrawals will appear here after they happen." />
               </div>
             </motion.div>
           )}
@@ -326,13 +306,25 @@ function AppHeader({
   onProfile: () => void;
   onNotifications: () => void;
 }) {
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
+  function openMyCards() {
+    setIsProfileMenuOpen(false);
+    onProfile();
+  }
+
   return (
     <header className="app-header">
       {step === 'home' ? <button className="icon-button notification-button" onClick={onNotifications}><Bell size={17} />{hasUnread && <i />}</button> : <button className="icon-button" onClick={onBack}>Back</button>}
       <span>VoltCard</span>
       <div className="header-actions">
         {step !== 'home' && <button className="icon-button notification-button" onClick={onNotifications}><Bell size={17} />{hasUnread && <i />}</button>}
-        <button className="brand-mark" onClick={onProfile}>V</button>
+        <div className={`profile-menu-wrap ${isProfileMenuOpen ? 'menu-open' : ''}`}>
+          <button className="brand-mark" onClick={() => setIsProfileMenuOpen((value) => !value)}>V</button>
+          <div className="profile-menu glass-panel">
+            <button onClick={openMyCards}><CreditCard size={15} />My Cards</button>
+          </div>
+        </div>
       </div>
     </header>
   );
