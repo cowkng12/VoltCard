@@ -4,6 +4,7 @@ import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
+import { startTelegramBot } from './telegramBot';
 
 const app = express();
 const port = Number(process.env.PORT ?? 4000);
@@ -51,4 +52,11 @@ app.get(/.*/, (_request, response) => {
 
 app.listen(port, () => {
   console.log(`VoltCard API listening on http://localhost:${port}`);
+
+  if (process.env.BOT_TOKEN && process.env.MINI_APP_URL) {
+    startTelegramBot(process.env.BOT_TOKEN, process.env.MINI_APP_URL);
+    console.log('VoltCard Telegram bot started');
+  } else {
+    console.log('VoltCard Telegram bot skipped: BOT_TOKEN and MINI_APP_URL are not set');
+  }
 });

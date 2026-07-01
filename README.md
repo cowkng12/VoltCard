@@ -40,12 +40,11 @@ npm run dev:bot
 
 ## Render Deployment
 
-The repository includes `render.yaml` with two services:
+The repository includes `render.yaml` with one web service:
 
-- `voltcard-web`: serves the Vite production build and API from Express
-- `voltcard-bot`: runs the Telegram bot as a background worker
+- `voltcard-web`: serves the Vite production build, API and Telegram bot from one Node process
 
-Create a Render Blueprint from this repository, then set `BOT_TOKEN` in the worker environment. After Render assigns the final web URL, update `MINI_APP_URL` if it differs from `https://voltcard-web.onrender.com`.
+Create a Render Web Service from this repository, then set `BOT_TOKEN` and `MINI_APP_URL` in the environment. `MINI_APP_URL` must be the public HTTPS URL of the Render service.
 
 Production commands:
 

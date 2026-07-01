@@ -11,16 +11,6 @@ services:
         value: 22
       - key: API_BASE_URL
         value: https://voltcard-web.onrender.com
-
-  - type: worker
-    name: voltcard-bot
-    runtime: node
-    plan: free
-    buildCommand: npm install && npm run build
-    startCommand: npm run start:bot
-    envVars:
-      - key: NODE_VERSION
-        value: 22
       - key: BOT_TOKEN
         sync: false
       - key: MINI_APP_URL
