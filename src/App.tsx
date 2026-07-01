@@ -46,6 +46,7 @@ type Coin = {
   volume: number;
   color: string;
   points: string;
+  sparkline: number[];
 };
 
 type Investment = {
@@ -71,12 +72,27 @@ const products: CardProduct[] = [
 ];
 
 const coins: Coin[] = [
-  { symbol: 'USDT', name: 'Tether USD', price: 1, change: 0.01, marketCap: 112000000000, volume: 42000000000, color: '#72f0bd', points: '0,42 26,38 52,40 78,35 104,37 130,33 156,34 182,31' },
-  { symbol: 'TON', name: 'Toncoin', price: 7.24, change: 4.82, marketCap: 18000000000, volume: 610000000, color: '#3b82f6', points: '0,50 26,46 52,43 78,34 104,37 130,26 156,22 182,16' },
-  { symbol: 'BTC', name: 'Bitcoin', price: 64280, change: 2.34, marketCap: 1260000000000, volume: 31000000000, color: '#f7b955', points: '0,48 26,40 52,44 78,36 104,31 130,34 156,24 182,20' },
-  { symbol: 'ETH', name: 'Ethereum', price: 3510, change: 1.76, marketCap: 421000000000, volume: 15000000000, color: '#9fb7ff', points: '0,46 26,42 52,39 78,41 104,30 130,32 156,27 182,23' },
-  { symbol: 'SOL', name: 'Solana', price: 148.8, change: 5.15, marketCap: 69000000000, volume: 2800000000, color: '#c084fc', points: '0,52 26,49 52,45 78,39 104,35 130,30 156,21 182,18' }
+  { symbol: 'USDT', name: 'Tether USD', price: 1, change: 0.01, marketCap: 112000000000, volume: 42000000000, color: '#72f0bd', points: '0,42 26,38 52,40 78,35 104,37 130,33 156,34 182,31', sparkline: [0.999, 1, 1.001, 1, 1.002, 1.001, 1] },
+  { symbol: 'TON', name: 'Toncoin', price: 7.24, change: 4.82, marketCap: 18000000000, volume: 610000000, color: '#3b82f6', points: '0,50 26,46 52,43 78,34 104,37 130,26 156,22 182,16', sparkline: [6.74, 6.82, 6.9, 6.86, 7.02, 7.14, 7.24] },
+  { symbol: 'BTC', name: 'Bitcoin', price: 64280, change: 2.34, marketCap: 1260000000000, volume: 31000000000, color: '#f7b955', points: '0,48 26,40 52,44 78,36 104,31 130,34 156,24 182,20', sparkline: [61200, 61850, 60640, 62530, 63110, 63840, 64280] },
+  { symbol: 'ETH', name: 'Ethereum', price: 3510, change: 1.76, marketCap: 421000000000, volume: 15000000000, color: '#9fb7ff', points: '0,46 26,42 52,39 78,41 104,30 130,32 156,27 182,23', sparkline: [3370, 3425, 3398, 3460, 3488, 3502, 3510] },
+  { symbol: 'SOL', name: 'Solana', price: 148.8, change: 5.15, marketCap: 69000000000, volume: 2800000000, color: '#c084fc', points: '0,52 26,49 52,45 78,39 104,35 130,30 156,21 182,18', sparkline: [136, 138.2, 141.6, 140.4, 144.8, 146.1, 148.8] }
 ];
+
+function buildChartPoints(values: number[], width: number, height: number, padding = 6) {
+  const safeValues = values.length > 1 ? values : [0, 1];
+  const min = Math.min(...safeValues);
+  const max = Math.max(...safeValues);
+  const range = max - min || 1;
+
+  return safeValues
+    .map((value, index) => {
+      const x = (index / (safeValues.length - 1)) * width;
+      const y = padding + (1 - (value - min) / range) * (height - padding * 2);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(' ');
+}
 
 function formatMoney(value: number, compact = false) {
   return new Intl.NumberFormat('en-US', {
@@ -151,7 +167,7 @@ function App() {
         const response = await fetch('/api/market');
         const data = (await response.json()) as {
           source: string;
-          market: Array<Pick<Coin, 'symbol' | 'name' | 'price' | 'change' | 'marketCap' | 'volume'>>;
+          market: Array<Pick<Coin, 'symbol' | 'name' | 'price' | 'change' | 'marketCap' | 'volume' | 'sparkline'>>;
         };
 
         if (!isMounted) return;
@@ -337,6 +353,7 @@ function App() {
                   <span className="tag">Selected asset</span>
                   <h3>{selectedCoin.name}</h3>
                 </div>
+                <FeaturedChart coin={selectedCoin} />
                 <div className="research-grid">
                   <div><span>Price</span><strong>{formatMoney(selectedCoin.price)}</strong></div>
                   <div><span>24h change</span><strong className={selectedCoin.change >= 0 ? 'positive' : 'negative'}>{selectedCoin.change >= 0 ? '+' : ''}{selectedCoin.change.toFixed(2)}%</strong></div>
@@ -350,6 +367,18 @@ function App() {
                     <input inputMode="decimal" value={investmentAmount} onChange={(event) => setInvestmentAmount(event.target.value.replace(/[^0-9.]/g, ''))} placeholder="50" />
                   </div>
                 </label>
+                <div className="funding-source">
+                  <div>
+                    <span>Funding source</span>
+                    <strong>{issuedCard ? `${issuedCard.product.name} ending ${issuedCard.number.slice(-4)}` : 'Issue a card first'}</strong>
+                  </div>
+                  <b>{formatMoney(investmentBalance)}</b>
+                </div>
+                {canInvest && (
+                  <div className="investment-preview">
+                    <span>{formatMoney(investmentValue)} will be reserved from your card balance for {selectedCoin.symbol}.</span>
+                  </div>
+                )}
                 {investmentAmount.length > 0 && !canInvest && <p className="hint">Enter an amount up to your available card balance.</p>}
                 <PrimaryButton disabled={!canInvest} onClick={investFromCard}>Invest in {selectedCoin.symbol}</PrimaryButton>
               </div>
@@ -591,20 +620,45 @@ function CardArtwork({ product, compact = false }: { product: CardProduct; compa
 }
 
 function MiniChart({ coin }: { coin: Coin }) {
+  const chartPoints = buildChartPoints(coin.sparkline, 182, 58, 8);
+
   return (
     <svg className="mini-chart" viewBox="0 0 182 58" role="img" aria-label={`${coin.symbol} chart`}>
-      <polyline points={coin.points} fill="none" stroke={coin.color} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline points={chartPoints} fill="none" stroke={coin.color} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
       <defs>
         <linearGradient id={`chart-${coin.symbol}`} x1="0" x2="0" y1="0" y2="1">
           <stop offset="0%" stopColor={coin.color} stopOpacity="0.28" />
           <stop offset="100%" stopColor={coin.color} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <polygon points={`0,58 ${coin.points} 182,58`} fill={`url(#chart-${coin.symbol})`} />
+      <polygon points={`0,58 ${chartPoints} 182,58`} fill={`url(#chart-${coin.symbol})`} />
     </svg>
   );
 }
 
+function FeaturedChart({ coin }: { coin: Coin }) {
+  const chartPoints = buildChartPoints(coin.sparkline, 360, 150, 14);
+
+  return (
+    <div className="featured-chart">
+      <div className="featured-chart-top">
+        <div><span>7D chart</span><strong>{coin.symbol}</strong></div>
+        <b className={coin.change >= 0 ? 'positive' : 'negative'}>{coin.change >= 0 ? '+' : ''}{coin.change.toFixed(2)}%</b>
+      </div>
+      <svg viewBox="0 0 360 150" role="img" aria-label={`${coin.symbol} 7 day chart`}>
+        <defs>
+          <linearGradient id={`featured-${coin.symbol}`} x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor={coin.color} stopOpacity="0.32" />
+            <stop offset="100%" stopColor={coin.color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <polygon points={`0,150 ${chartPoints} 360,150`} fill={`url(#featured-${coin.symbol})`} />
+        <polyline points={chartPoints} fill="none" stroke={coin.color} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      <div className="chart-axis"><span>7d ago</span><span>Today</span></div>
+    </div>
+  );
+}
 function BottomNav({ activeStep, onHome, onInvest, onCards }: { activeStep: Step; onHome: () => void; onInvest: () => void; onCards: () => void }) {
   return (
     <nav className="bottom-nav glass-panel">

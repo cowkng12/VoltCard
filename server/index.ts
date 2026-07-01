@@ -18,11 +18,11 @@ const cardRequestSchema = z.object({
 });
 
 const fallbackMarket = [
-  { symbol: 'USDT', name: 'Tether USD', price: 1, change: 0.01, marketCap: 112000000000, volume: 42000000000 },
-  { symbol: 'TON', name: 'Toncoin', price: 7.24, change: 4.82, marketCap: 18000000000, volume: 610000000 },
-  { symbol: 'BTC', name: 'Bitcoin', price: 64280, change: 2.34, marketCap: 1260000000000, volume: 31000000000 },
-  { symbol: 'ETH', name: 'Ethereum', price: 3510, change: 1.76, marketCap: 421000000000, volume: 15000000000 },
-  { symbol: 'SOL', name: 'Solana', price: 148.8, change: 5.15, marketCap: 69000000000, volume: 2800000000 }
+  { symbol: 'USDT', name: 'Tether USD', price: 1, change: 0.01, marketCap: 112000000000, volume: 42000000000, sparkline: [0.999, 1, 1.001, 1, 1.002, 1.001, 1] },
+  { symbol: 'TON', name: 'Toncoin', price: 7.24, change: 4.82, marketCap: 18000000000, volume: 610000000, sparkline: [6.74, 6.82, 6.9, 6.86, 7.02, 7.14, 7.24] },
+  { symbol: 'BTC', name: 'Bitcoin', price: 64280, change: 2.34, marketCap: 1260000000000, volume: 31000000000, sparkline: [61200, 61850, 60640, 62530, 63110, 63840, 64280] },
+  { symbol: 'ETH', name: 'Ethereum', price: 3510, change: 1.76, marketCap: 421000000000, volume: 15000000000, sparkline: [3370, 3425, 3398, 3460, 3488, 3502, 3510] },
+  { symbol: 'SOL', name: 'Solana', price: 148.8, change: 5.15, marketCap: 69000000000, volume: 2800000000, sparkline: [136, 138.2, 141.6, 140.4, 144.8, 146.1, 148.8] }
 ];
 
 app.use(cors());
@@ -34,7 +34,7 @@ app.get('/health', (_request, response) => {
 
 app.get('/api/market', async (_request, response) => {
   const ids = 'tether,the-open-network,bitcoin,ethereum,solana';
-  const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}&order=market_cap_desc&per_page=5&page=1&sparkline=false&price_change_percentage=24h`;
+  const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}&order=market_cap_desc&per_page=5&page=1&sparkline=true&price_change_percentage=24h`;
 
   try {
     const marketResponse = await fetch(url, { headers: { accept: 'application/json' } });
@@ -50,6 +50,7 @@ app.get('/api/market', async (_request, response) => {
       price_change_percentage_24h: number | null;
       market_cap: number;
       total_volume: number;
+      sparkline_in_7d?: { price: number[] };
     }>;
 
     const symbols = ['USDT', 'TON', 'BTC', 'ETH', 'SOL'];
@@ -63,7 +64,8 @@ app.get('/api/market', async (_request, response) => {
         price: item?.current_price ?? fallback.price,
         change: item?.price_change_percentage_24h ?? fallback.change,
         marketCap: item?.market_cap ?? fallback.marketCap,
-        volume: item?.total_volume ?? fallback.volume
+        volume: item?.total_volume ?? fallback.volume,
+        sparkline: item?.sparkline_in_7d?.price?.length ? item.sparkline_in_7d.price : fallback.sparkline
       };
     });
 
