@@ -38,6 +38,22 @@ Run the Telegram bot after creating `.env` from `.env.example`:
 npm run dev:bot
 ```
 
+## Render Deployment
+
+The repository includes `render.yaml` with two services:
+
+- `voltcard-web`: serves the Vite production build and API from Express
+- `voltcard-bot`: runs the Telegram bot as a background worker
+
+Create a Render Blueprint from this repository, then set `BOT_TOKEN` in the worker environment. After Render assigns the final web URL, update `MINI_APP_URL` if it differs from `https://voltcard-web.onrender.com`.
+
+Production commands:
+
+```bash
+npm run build
+npm run start
+```
+
 ## Environment
 
 Copy `.env.example` to `.env` and set:

@@ -9,7 +9,8 @@
     "dev:bot": "tsx watch server/bot.ts",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "start": "node dist-server/index.js",
+    "start": "tsx server/index.ts",
+    "start:bot": "tsx server/bot.ts",
     "typecheck": "tsc -b"
   },
   "dependencies": {
@@ -22,6 +23,7 @@
     "react": "latest",
     "react-dom": "latest",
     "telegraf": "latest",
+    "tsx": "latest",
     "zod": "latest"
   },
   "devDependencies": {
@@ -30,7 +32,6 @@
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
-    "tsx": "latest",
     "typescript": "latest",
     "vite": "latest"
   }
