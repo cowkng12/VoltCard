@@ -178,7 +178,27 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 .section-title span, .flow-intro span, .tag { color: #8bbcff; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
 .section-title h2 { margin: 3px 0 0; letter-spacing: -0.04em; }
 
-.product-list { display: grid; gap: 18px; }
+.product-carousel { display: grid; gap: 13px; }
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-height: 18px;
+}
+.carousel-dots button {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border-radius: 999px;
+  background: rgba(232,240,255,.28);
+  transition: width .2s ease, background .2s ease, box-shadow .2s ease;
+}
+.carousel-dots button.active {
+  width: 22px;
+  background: #3b82f6;
+  box-shadow: 0 0 0 5px rgba(59,130,246,.12);
+}
 .product-card { display: grid; gap: 16px; padding: 16px; border-radius: 32px; }
 .card-art {
   position: relative;

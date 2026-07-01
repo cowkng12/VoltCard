@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -77,6 +77,7 @@ function App() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [deposit, setDeposit] = useState('');
+  const [carouselIndex, setCarouselIndex] = useState(0);
   const [issuedCard, setIssuedCard] = useState<IssuedCard | null>(null);
   const [issuedCards, setIssuedCards] = useState<IssuedCard[]>([]);
   const [showCvv, setShowCvv] = useState(false);
@@ -105,6 +106,16 @@ function App() {
     haptic();
     setSelectedProduct(product);
     setStep('holder');
+  }
+
+  function setCarouselProduct(index: number) {
+    setCarouselIndex(index);
+    haptic();
+  }
+
+  function swipeCarousel(_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) {
+    if (info.offset.x < -45) setCarouselProduct((carouselIndex + 1) % products.length);
+    if (info.offset.x > 45) setCarouselProduct((carouselIndex - 1 + products.length) % products.length);
   }
 
   function issueCard() {
@@ -153,11 +164,13 @@ function App() {
               </div>
 
               <SectionTitle eyebrow="Recommended" title="Virtual cards" />
-              <div className="product-list">
-                {products.map((product) => (
-                  <ProductCard key={product.id} product={product} onSelect={() => selectProduct(product)} />
-                ))}
-              </div>
+              <ProductCarousel
+                activeIndex={carouselIndex}
+                products={products}
+                onSelectProduct={selectProduct}
+                onSwipe={swipeCarousel}
+                onSetActive={setCarouselProduct}
+              />
             </motion.div>
           )}
 
@@ -339,6 +352,53 @@ function Hero({ name }: { name: string }) {
       <div className="hero-row">
         <span>Premium account</span>
         <b>+4.8%</b>
+      </div>
+    </div>
+  );
+}
+
+function ProductCarousel({
+  products,
+  activeIndex,
+  onSelectProduct,
+  onSwipe,
+  onSetActive
+}: {
+  products: CardProduct[];
+  activeIndex: number;
+  onSelectProduct: (product: CardProduct) => void;
+  onSwipe: (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => void;
+  onSetActive: (index: number) => void;
+}) {
+  const activeProduct = products[activeIndex];
+
+  return (
+    <div className="product-carousel">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeProduct.id}
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.18}
+          onDragEnd={onSwipe}
+          initial={{ opacity: 0, x: 28, scale: 0.98 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          exit={{ opacity: 0, x: -28, scale: 0.98 }}
+          transition={{ duration: 0.24, ease: 'easeOut' }}
+        >
+          <ProductCard product={activeProduct} onSelect={() => onSelectProduct(activeProduct)} />
+        </motion.div>
+      </AnimatePresence>
+
+      <div className="carousel-dots" aria-label="Virtual card carousel">
+        {products.map((product, index) => (
+          <button
+            key={product.id}
+            className={index === activeIndex ? 'active' : ''}
+            aria-label={`Show ${product.name}`}
+            onClick={() => onSetActive(index)}
+          />
+        ))}
       </div>
     </div>
   );
