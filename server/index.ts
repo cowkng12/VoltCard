@@ -10,6 +10,7 @@ const app = express();
 const port = Number(process.env.PORT ?? 4000);
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const clientDistPath = path.resolve(dirname, '../dist');
+const keepAliveIntervalMs = 1000 * 60 * 10;
 
 const cardRequestSchema = z.object({
   productId: z.enum(['subscriptions', 'wallet-pay']),
@@ -109,5 +110,23 @@ app.listen(port, () => {
     console.log('VoltCard Telegram bot started');
   } else {
     console.log('VoltCard Telegram bot skipped: BOT_TOKEN and MINI_APP_URL are not set');
+  }
+
+  if (process.env.KEEP_ALIVE === 'true') {
+    const serviceUrl = process.env.RENDER_EXTERNAL_URL ?? process.env.MINI_APP_URL;
+
+    if (serviceUrl) {
+      setInterval(async () => {
+        try {
+          await fetch(`${serviceUrl.replace(/\/$/, '')}/health`);
+        } catch {
+          console.warn('VoltCard keep-alive ping failed');
+        }
+      }, keepAliveIntervalMs);
+
+      console.log(`VoltCard keep-alive enabled for ${serviceUrl}`);
+    } else {
+      console.log('VoltCard keep-alive skipped: RENDER_EXTERNAL_URL or MINI_APP_URL is not set');
+    }
   }
 });

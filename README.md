@@ -46,6 +46,8 @@ The repository includes `render.yaml` with one web service:
 
 Create a Render Web Service from this repository, then set `BOT_TOKEN` and `MINI_APP_URL` in the environment. `MINI_APP_URL` must be the public HTTPS URL of the Render service.
 
+Set `KEEP_ALIVE=true` to ping the service `/health` endpoint every 10 minutes. On free hosting this is best-effort only; the platform can still enforce sleep policies.
+
 Production commands:
 
 ```bash
@@ -60,6 +62,7 @@ Copy `.env.example` to `.env` and set:
 - `BOT_TOKEN`: token from BotFather
 - `MINI_APP_URL`: public HTTPS URL for the deployed Mini App
 - `PORT`: API port, defaults to `4000`
+- `KEEP_ALIVE`: set to `true` on Render to periodically ping `/health`
 
 ## Next Architecture Steps
 

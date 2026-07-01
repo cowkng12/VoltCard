@@ -15,3 +15,5 @@ services:
         sync: false
       - key: MINI_APP_URL
         value: https://voltcard-web.onrender.com
+      - key: KEEP_ALIVE
+        value: true
