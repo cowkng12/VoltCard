@@ -56,7 +56,7 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 
 .screen {
   min-height: calc(100vh - 112px);
-  padding: 0 18px 26px;
+  padding: 0 18px 112px;
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -340,9 +340,65 @@ input:focus { border-color: rgba(59,130,246,.9); box-shadow: 0 0 0 4px rgba(59,1
 .notification-dot { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 16px; background: rgba(59,130,246,.14); color: #9cc5ff; }
 .notification-item div:nth-child(2) { display: grid; gap: 4px; }
 .notification-item b { color: #fff; }
+.investment-hero { padding: 22px; border-radius: 28px; margin: 16px 0 22px; }
+.investment-hero h1 { margin: 8px 0; font-size: 42px; letter-spacing: -0.07em; }
+.investment-hero p { margin: 0; color: rgba(232,240,255,.62); }
+.coin-list { display: grid; gap: 11px; margin-bottom: 18px; }
+.coin-card {
+  display: grid;
+  grid-template-columns: 44px 1fr 92px auto;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 22px;
+  color: #fff;
+  text-align: left;
+}
+.coin-card.selected { border-color: rgba(59,130,246,.72); box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 14px 38px rgba(59,130,246,.14); }
+.coin-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 16px; color: #06101c; font-weight: 950; }
+.coin-card div:nth-child(2), .holding-card div:nth-child(2) { display: grid; gap: 3px; }
+.coin-card span, .holding-card span { color: rgba(232,240,255,.62); font-size: 12px; }
+.mini-chart { width: 92px; height: 42px; opacity: .96; }
+.coin-price { display: grid; gap: 3px; text-align: right; }
+.coin-price span { color: #72f0bd; font-weight: 800; }
+.invest-panel { display: grid; gap: 14px; padding: 16px; border-radius: 26px; margin-bottom: 22px; }
+.invest-panel h3 { margin: 5px 0 0; letter-spacing: -.03em; }
+.holding-card { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 12px; padding: 13px; border-radius: 22px; }
+.holding-card b { color: #fff; }
+.bottom-nav {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 18px;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 8px;
+  border-radius: 24px;
+}
+.bottom-nav button {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  min-height: 58px;
+  border-radius: 18px;
+  color: rgba(232,240,255,.62);
+  background: transparent;
+  font-size: 11px;
+  font-weight: 800;
+}
+.bottom-nav button.active { color: #fff; background: rgba(59,130,246,.2); }
 
 @media (max-width: 520px) {
   .app-shell { padding: 0; }
   .phone-frame { width: 100%; min-height: 100vh; border: 0; border-radius: 0; }
   .screen { min-height: calc(100vh - 74px); }
+  .bottom-nav { left: 14px; right: 14px; bottom: max(12px, env(safe-area-inset-bottom)); }
+}
+
+@media (max-width: 390px) {
+  .coin-card { grid-template-columns: 44px 1fr auto; }
+  .mini-chart { display: none; }
 }
